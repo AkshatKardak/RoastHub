@@ -9,13 +9,6 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
-
-// Routes
-app.use('/api/tweets', tweetRoutes);
-
 // MongoDB Atlas connection with serverless optimization
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://kardakakshat_db_user:94a6ozyGVdBv8OWP@cluster0roasthub.arxjo5a.mongodb.net/roasthub?retryWrites=true&w=majority&appName=Cluster0RoastHub';
 
@@ -45,8 +38,31 @@ export async function connectDB() {
   }
 }
 
-// Initialize connection
-connectDB().catch(console.error);
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Ensure DB connection in serverless mode (lazy connection)
+app.use(async (req, res, next) => {
+  if ((process.env.VERCEL === '1' || process.env.VERCEL_ENV) && !isConnected) {
+    try {
+      await connectDB();
+    } catch (error) {
+      console.error('Failed to connect to DB:', error);
+      // Continue anyway - some routes might work without DB
+    }
+  }
+  next();
+});
+
+// Initialize connection only in non-serverless environments
+// In serverless (Vercel), connect on first request to avoid cold start issues
+if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
+  connectDB().catch(console.error);
+}
+
+// Routes
+app.use('/api/tweets', tweetRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
