@@ -18,7 +18,7 @@ function App() {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.post('http://localhost:5000/api/tweets/generate', {
+        await axios.post('https://roasthub-backend.vercel.app/api/tweets/generate', {
         topic: topic.trim()
       });
       setTweets(response.data.tweets);
