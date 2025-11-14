@@ -2,6 +2,14 @@
 
 Generate brutal, no-filter tweets with authentic Indian flavor! RoastHub creates savage tweets infused with Bollywood references, cricket banter, and viral desi slang that makes everyone go "so true!" 💀
 
+## 🚀 Live Deployment
+
+[![Frontend](https://img.shields.io/badge/Frontend-Live-success?style=for-the-badge&logo=render)](https://roasthub-frontend.onrender.com)
+[![Backend](https://img.shields.io/badge/Backend-Live-success?style=for-the-badge&logo=render)](https://roasthub-fruw.onrender.com)
+
+- **Frontend**: [https://roasthub-frontend.onrender.com](https://roasthub-frontend.onrender.com)
+- **Backend API**: [https://roasthub-fruw.onrender.com](https://roasthub-fruw.onrender.com)
+
 ---
 
 ## Features
@@ -172,4 +180,5 @@ Link of OutSkill website [OutSkill](https://www.outskill.com) Webpage
 ---
 
 Made with ❤️ and lots of savage energy for the Indian internet!
+
 
