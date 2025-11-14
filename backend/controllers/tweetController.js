@@ -4,16 +4,17 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Initialize Grok AI (using OpenAI SDK with Grok endpoint)
-let grokClient;
+// Initialize Groq AI (using OpenAI SDK with Groq endpoint)
+let groqClient;
 try {
-  grokClient = new OpenAI({
-    apiKey: process.env.GROK_API_KEY,
-    baseURL: 'https://api.x.ai/v1',
+  groqClient = new OpenAI({
+    apiKey: process.env.GROK_API_KEY || process.env.GROQ_API_KEY,
+    baseURL: 'https://api.groq.com/openai/v1',
   });
-  console.log('✅ Grok AI initialized successfully');
+  console.log('✅ Groq AI initialized successfully');
 } catch (error) {
-  console.log('❌ Grok AI initialization failed, using mock mode');
+  console.log('❌ Groq AI initialization failed, using mock mode');
+  console.error(error);
 }
 
 export const generateTweets = async (req, res) => {
@@ -51,42 +52,44 @@ export const generateTweets = async (req, res) => {
     console.error('❌ Error generating tweets:', error);
     res.status(500).json({ 
       error: 'Internal server error',
-      message: 'Failed to generate tweets. Please try again.'
+      message: 'Failed to generate tweets. Please try again.',
+      details: error.message
     });
   }
 };
 
 async function generateAITweets(topic) {
-  // If Grok AI is not configured, use mock tweets
-  if (!grokClient || !process.env.GROK_API_KEY) {
-    console.log('🔄 Using mock tweets (Grok AI not configured)');
+  // If Groq AI is not configured, use mock tweets
+  if (!groqClient || (!process.env.GROK_API_KEY && !process.env.GROQ_API_KEY)) {
+    console.log('🔄 Using mock tweets (Groq AI not configured)');
     return generateMockTweets(topic);
   }
 
   try {
-    console.log('🤖 Generating AI tweets with Grok for topic:', topic);
+    console.log('🤖 Generating AI tweets with Groq for topic:', topic);
 
-    const prompt = `
-    You are RoastHub, an AI specialized in creating savage, brutal, no-hesitation, ultra-relatable tweets for Indian audiences.
-    
-    Generate exactly 10 viral-potential tweets on this topic: "${topic}"
-    
-    Requirements:
-    - Each tweet must be 1-2 lines maximum
-    - Use Hinglish, Gen-Z slang, or trending Indian phrases
-    - Reference Bollywood, cricket, or current Indian pop culture
-    - Be savage and brutal but avoid hate speech
-    - Each tweet should be different in format and style
-    - Use current Indian internet slang (rizz, slay, no cap, vibe, lit, etc.)
-    - Include references to recent Bollywood movies, cricket matches, or viral Indian trends
-    
-    For each tweet, provide these ratings out of 10:
-    - Viral Potential: How likely to go viral on Indian Twitter/X
-    - Relatability: How much Indians will connect with it  
-    - Savage Level: How brutally honest/roasting it is
-    - Brutal Factor: How hard-hitting the truth is
-    
-    Return ONLY a JSON array where each object has:
+    const prompt = `You are RoastHub, an AI specialized in creating savage, brutal, no-hesitation, ultra-relatable tweets for Indian audiences.
+
+Generate exactly 10 viral-potential tweets on this topic: "${topic}"
+
+Requirements:
+- Each tweet must be 1-2 lines maximum
+- Use Hinglish, Gen-Z slang, or trending Indian phrases
+- Reference Bollywood, cricket, or current Indian pop culture
+- Be savage and brutal but avoid hate speech
+- Each tweet should be different in format and style
+- Use current Indian internet slang (rizz, slay, no cap, vibe, lit, etc.)
+- Include references to recent Bollywood movies, cricket matches, or viral Indian trends
+
+For each tweet, provide these ratings out of 10:
+- Viral Potential: How likely to go viral on Indian Twitter/X
+- Relatability: How much Indians will connect with it  
+- Savage Level: How brutally honest/roasting it is
+- Brutal Factor: How hard-hitting the truth is
+
+Return ONLY a valid JSON object with a "tweets" array where each object has:
+{
+  "tweets": [
     {
       "text": "the actual tweet text",
       "viral": number,
@@ -95,16 +98,17 @@ async function generateAITweets(topic) {
       "brutal": number,
       "reason": "one sentence explaining the ratings"
     }
-    
-    Generate exactly 10 tweets about "${topic}".
-    `;
+  ]
+}
 
-    const completion = await grokClient.chat.completions.create({
-      model: "grok-beta",
+Generate exactly 10 tweets about "${topic}". Return ONLY the JSON object, no other text.`;
+
+    const completion = await groqClient.chat.completions.create({
+      model: "llama-3.1-70b-versatile",
       messages: [
         {
           role: "system",
-          content: "You are RoastHub - a savage tweet generator for Indian Gen-Z. Always respond with valid JSON array only."
+          content: "You are RoastHub - a savage tweet generator for Indian Gen-Z. Always respond with valid JSON format only. No markdown, no code blocks, just pure JSON."
         },
         {
           role: "user",
@@ -112,20 +116,31 @@ async function generateAITweets(topic) {
         }
       ],
       temperature: 0.9,
-      max_tokens: 2000
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
     });
 
     const response = completion.choices[0].message.content;
-    console.log('📨 Grok AI Response received');
+    console.log('📨 Groq AI Response received');
+    console.log('Raw response:', response);
     
-    // Parse the JSON response from Grok AI
+    // Parse the JSON response from Groq AI
     try {
       const parsedResponse = JSON.parse(response);
-      let tweets = Array.isArray(parsedResponse) ? parsedResponse : [];
       
-      if (tweets.length === 10) {
-        console.log('✅ Successfully generated 10 AI tweets');
-        return tweets.map(tweet => ({
+      // Check if response has a tweets array or is directly an array
+      let tweets = [];
+      if (Array.isArray(parsedResponse)) {
+        tweets = parsedResponse;
+      } else if (parsedResponse.tweets && Array.isArray(parsedResponse.tweets)) {
+        tweets = parsedResponse.tweets;
+      } else if (parsedResponse.data && Array.isArray(parsedResponse.data)) {
+        tweets = parsedResponse.data;
+      }
+      
+      if (tweets.length >= 10) {
+        console.log('✅ Successfully generated AI tweets');
+        return tweets.slice(0, 10).map(tweet => ({
           text: tweet.text || "Savage tweet here!",
           viral: tweet.viral || 7,
           relatable: tweet.relatable || 7,
@@ -134,17 +149,33 @@ async function generateAITweets(topic) {
           reason: tweet.reason || "Perfect desi vibe with viral potential"
         }));
       } else {
-        throw new Error('Invalid number of tweets received');
+        console.log('⚠️ Received fewer than 10 tweets, using mock tweets');
+        return generateMockTweets(topic);
       }
       
     } catch (parseError) {
-      console.error('❌ Error parsing Grok AI response:', parseError);
+      console.error('❌ Error parsing Groq AI response:', parseError);
       console.log('Raw response:', response);
       return generateMockTweets(topic);
     }
 
   } catch (error) {
-    console.error('❌ Grok AI API error:', error.message);
+    console.error('❌ Groq AI API error:', error.message);
+    console.error('Full error:', error);
+    
+    // Provide more specific error messages
+    if (error.status === 429 || error.message.includes('quota') || error.message.includes('429')) {
+      console.error('⚠️ Groq API quota exceeded or rate limited. Please check your API key and quota at https://console.groq.com');
+      console.error('🔄 Falling back to mock tweets. To get AI-generated tweets, please:');
+      console.error('   1. Check your Groq API quota at https://console.groq.com');
+      console.error('   2. Verify your GROK_API_KEY (or GROQ_API_KEY) in .env file');
+      console.error('   3. Wait for quota reset or upgrade your plan');
+    } else if (error.status === 401 || error.message.includes('401')) {
+      console.error('⚠️ Invalid Groq API key. Please check your GROK_API_KEY (or GROQ_API_KEY) in .env file');
+    } else {
+      console.error('⚠️ Groq API request failed. Check your internet connection and API key.');
+    }
+    
     return generateMockTweets(topic);
   }
 }
