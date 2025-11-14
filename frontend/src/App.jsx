@@ -3,6 +3,9 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import './App.css';
 
+// Use Vite environment variable for API base URL in development
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://roasthub-backend.vercel.app';
+
 function App() {
   const [topic, setTopic] = useState('');
   const [tweets, setTweets] = useState([]);
@@ -18,7 +21,7 @@ function App() {
     setLoading(true);
     setError('');
     try {
-        await axios.post('https://roasthub-backend.vercel.app/api/tweets/generate', {
+        const response = await axios.post(`${API_BASE}/api/tweets/generate`, {
         topic: topic.trim()
       });
       setTweets(response.data.tweets);
