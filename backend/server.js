@@ -26,7 +26,7 @@ export async function connectDB() {
     console.log('✅ Using existing MongoDB connection');
     return;
   }
-
+  
   try {
     await mongoose.connect(MONGODB_URI, {
       serverSelectionTimeoutMS: 5000,
@@ -67,3 +67,6 @@ app.listen(PORT, () => {
   console.log(`🚀 RoastHub Server running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
 });
+
+// Export app for Vercel serverless
+export default app;
