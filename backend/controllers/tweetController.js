@@ -9,7 +9,7 @@ let grokClient;
 try {
   grokClient = new OpenAI({
     apiKey: process.env.GROK_API_KEY,
-    baseURL: 'https://api.x.ai/v1',
+    baseURL: 'https://api.groq.com/openai/v1',
   });
   console.log('✅ Grok AI initialized successfully');
 } catch (error) {
