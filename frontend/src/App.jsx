@@ -23,8 +23,8 @@ function App() {
     try {
         const response = await axios.post(`${API_BASE}/api/tweets/generate`, {
         topic: topic.trim()
-      });
-      setTweets(response.data.tweets);
+        });
+        setTweets(response.data.tweets); // Now 'response' is defined ✅
     } catch (error) {
       console.error('Error generating tweets:', error);
       setError('Failed to generate tweets. Please try again.');
