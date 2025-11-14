@@ -18,10 +18,11 @@ function App() {
     setLoading(true);
     setError('');
     try {
-        await axios.post('https://roasthub-backend.vercel.app/api/tweets/generate', {
+       // CORRECT
+        const response = await axios.post('https://roasthub-backend.vercel.app/api/tweets/generate', {
         topic: topic.trim()
-      });
-      setTweets(response.data.tweets);
+        });
+        setTweets(response.data.tweets); // Now 'response' is defined ✅
     } catch (error) {
       console.error('Error generating tweets:', error);
       setError('Failed to generate tweets. Please try again.');
