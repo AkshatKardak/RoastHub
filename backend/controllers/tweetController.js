@@ -4,16 +4,16 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Initialize OpenAI with error handling
-let openai;
+// Initialize Grok AI (using OpenAI SDK with Grok endpoint)
+let grokClient;
 try {
-  openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-            baseURL: 'https://api.groq.com/openai/v1',
+  grokClient = new OpenAI({
+    apiKey: process.env.GROK_API_KEY,
+    baseURL: 'https://api.x.ai/v1',
   });
-  console.log('✅ OpenAI initialized successfully');
+  console.log('✅ Grok AI initialized successfully');
 } catch (error) {
-  console.log('❌ OpenAI initialization failed, using mock mode');
+  console.log('❌ Grok AI initialization failed, using mock mode');
 }
 
 export const generateTweets = async (req, res) => {
@@ -57,14 +57,14 @@ export const generateTweets = async (req, res) => {
 };
 
 async function generateAITweets(topic) {
-  // If OpenAI is not configured, use mock tweets
-  if (!openai || !process.env.OPENAI_API_KEY) {
-    console.log('🔄 Using mock tweets (OpenAI not configured)');
+  // If Grok AI is not configured, use mock tweets
+  if (!grokClient || !process.env.GROK_API_KEY) {
+    console.log('🔄 Using mock tweets (Grok AI not configured)');
     return generateMockTweets(topic);
   }
 
   try {
-    console.log('🤖 Generating AI tweets for topic:', topic);
+    console.log('🤖 Generating AI tweets with Grok for topic:', topic);
 
     const prompt = `
     You are RoastHub, an AI specialized in creating savage, brutal, no-hesitation, ultra-relatable tweets for Indian audiences.
@@ -99,8 +99,9 @@ async function generateAITweets(topic) {
     Generate exactly 10 tweets about "${topic}".
     `;
 
-    const completion = await openai.chat.completions.create({
-            model: "llama-3.1-70b-versatile", // Using Groq's free fast model      messages: [
+    const completion = await grokClient.chat.completions.create({
+      model: "grok-beta",
+      messages: [
         {
           role: "system",
           content: "You are RoastHub - a savage tweet generator for Indian Gen-Z. Always respond with valid JSON array only."
@@ -115,9 +116,9 @@ async function generateAITweets(topic) {
     });
 
     const response = completion.choices[0].message.content;
-    console.log('📨 OpenAI Response received');
+    console.log('📨 Grok AI Response received');
     
-    // Parse the JSON response from OpenAI
+    // Parse the JSON response from Grok AI
     try {
       const parsedResponse = JSON.parse(response);
       let tweets = Array.isArray(parsedResponse) ? parsedResponse : [];
@@ -137,13 +138,13 @@ async function generateAITweets(topic) {
       }
       
     } catch (parseError) {
-      console.error('❌ Error parsing OpenAI response:', parseError);
+      console.error('❌ Error parsing Grok AI response:', parseError);
       console.log('Raw response:', response);
       return generateMockTweets(topic);
     }
 
   } catch (error) {
-    console.error('❌ OpenAI API error:', error.message);
+    console.error('❌ Grok AI API error:', error.message);
     return generateMockTweets(topic);
   }
 }
