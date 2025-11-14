@@ -63,15 +63,21 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Bind explicitly to 0.0.0.0 so the server is reachable on localhost/IPv4
-// Print PID for easier debugging and explicitly bind to 0.0.0.0 so localhost
-// and other interfaces can reach the server in dev environments.
-console.log('Process PID:', process.pid);
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 RoastHub Server running on port ${PORT}`);
-  console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-  console.log('Bound to:', '0.0.0.0');
-});
+// Only start server if not in serverless environment (Vercel)
+// Vercel serverless functions don't need app.listen()
+if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
+  // Bind explicitly to 0.0.0.0 so the server is reachable on localhost/IPv4
+  // Print PID for easier debugging and explicitly bind to 0.0.0.0 so localhost
+  // and other interfaces can reach the server in dev environments.
+  console.log('Process PID:', process.pid);
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 RoastHub Server running on port ${PORT}`);
+    console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+    console.log('Bound to:', '0.0.0.0');
+  });
+} else {
+  console.log('🚀 Running in serverless mode (Vercel)');
+}
 
 // Export app for Vercel serverless
 export default app;
