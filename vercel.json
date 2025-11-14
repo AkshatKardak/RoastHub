@@ -1,17 +1,12 @@
-{
+﻿{
   "version": 2,
   "installCommand": "npm install",
   "functions": {
     "api/index.js": {
-      "includeFiles": "backend/**"
+      "runtime": "nodejs20.x",
+      "includeFiles": ["backend/**"]
     }
   },
-  "builds": [
-    {
-      "src": "api/index.js",
-      "use": "@vercel/node"
-    }
-  ],
   "routes": [
     {
       "src": "/(.*)",
@@ -19,4 +14,3 @@
     }
   ]
 }
-
