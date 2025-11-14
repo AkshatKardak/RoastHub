@@ -4,16 +4,16 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Initialize Grok AI (using OpenAI SDK with Grok endpoint)
-let grokClient;
+// Initialize Groq AI (using OpenAI SDK with Groq endpoint)
+let groqClient;
 try {
-  grokClient = new OpenAI({
-    apiKey: process.env.GROK_API_KEY,
-    baseURL: 'https://api.x.ai/v1',
+  groqClient = new OpenAI({
+    apiKey: process.env.GROQ_API_KEY || process.env.GROK_API_KEY,
+    baseURL: 'https://api.groq.com/openai/v1',
   });
-  console.log('✅ Grok AI initialized successfully');
+  console.log('✅ Groq AI initialized successfully');
 } catch (error) {
-  console.log('❌ Grok AI initialization failed, using mock mode');
+  console.log('❌ Groq AI initialization failed, using mock mode');
   console.error(error);
 }
 
@@ -59,14 +59,14 @@ export const generateTweets = async (req, res) => {
 };
 
 async function generateAITweets(topic) {
-  // If Grok AI is not configured, use mock tweets
-  if (!grokClient || !process.env.GROK_API_KEY) {
-    console.log('🔄 Using mock tweets (Grok AI not configured)');
+  // If Groq AI is not configured, use mock tweets
+  if (!groqClient || (!process.env.GROQ_API_KEY && !process.env.GROK_API_KEY)) {
+    console.log('🔄 Using mock tweets (Groq AI not configured)');
     return generateMockTweets(topic);
   }
 
   try {
-    console.log('🤖 Generating AI tweets with Grok for topic:', topic);
+    console.log('🤖 Generating AI tweets with Groq for topic:', topic);
 
     const prompt = `You are RoastHub, an AI specialized in creating savage, brutal, no-hesitation, ultra-relatable tweets for Indian audiences.
 
@@ -99,8 +99,8 @@ Return ONLY a JSON array where each object has:
 
 Generate exactly 10 tweets about "${topic}".`;
 
-    const completion = await grokClient.chat.completions.create({
-      model: "grok-beta",
+    const completion = await groqClient.chat.completions.create({
+      model: "llama-3.1-70b-versatile",
       messages: [
         {
           role: "system",
@@ -112,25 +112,27 @@ Generate exactly 10 tweets about "${topic}".`;
         }
       ],
       temperature: 0.9,
-      max_tokens: 2000
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
     });
 
     const response = completion.choices[0].message.content;
-    console.log('📨 Grok AI Response received');
+    console.log('📨 Groq AI Response received');
     console.log('Raw response:', response);
     
-    // Parse the JSON response from Grok AI
+    // Parse the JSON response from Groq AI
     try {
-      // Remove markdown code blocks if present
-      let cleanedResponse = response.trim();
-      if (cleanedResponse.startsWith('```json')) {
-        cleanedResponse = cleanedResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '');
-      } else if (cleanedResponse.startsWith('```')) {
-        cleanedResponse = cleanedResponse.replace(/```\n?/g, '');
-      }
+      const parsedResponse = JSON.parse(response);
       
-      const parsedResponse = JSON.parse(cleanedResponse);
-      let tweets = Array.isArray(parsedResponse) ? parsedResponse : [];
+      // Check if response has a tweets array or is directly an array
+      let tweets = [];
+      if (Array.isArray(parsedResponse)) {
+        tweets = parsedResponse;
+      } else if (parsedResponse.tweets && Array.isArray(parsedResponse.tweets)) {
+        tweets = parsedResponse.tweets;
+      } else if (parsedResponse.data && Array.isArray(parsedResponse.data)) {
+        tweets = parsedResponse.data;
+      }
       
       if (tweets.length >= 10) {
         console.log('✅ Successfully generated AI tweets');
@@ -148,13 +150,13 @@ Generate exactly 10 tweets about "${topic}".`;
       }
       
     } catch (parseError) {
-      console.error('❌ Error parsing Grok AI response:', parseError);
+      console.error('❌ Error parsing Groq AI response:', parseError);
       console.log('Raw response:', response);
       return generateMockTweets(topic);
     }
 
   } catch (error) {
-    console.error('❌ Grok AI API error:', error.message);
+    console.error('❌ Groq AI API error:', error.message);
     console.error('Full error:', error);
     return generateMockTweets(topic);
   }
