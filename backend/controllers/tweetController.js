@@ -8,7 +8,7 @@ dotenv.config();
 let groqClient;
 try {
   groqClient = new OpenAI({
-    apiKey: process.env.GROQ_API_KEY || process.env.GROK_API_KEY,
+    apiKey: process.env.GROQ_API_KEY,
     baseURL: 'https://api.groq.com/openai/v1',
   });
   console.log('✅ Groq AI initialized successfully');
@@ -60,7 +60,7 @@ export const generateTweets = async (req, res) => {
 
 async function generateAITweets(topic) {
   // If Groq AI is not configured, use mock tweets
-  if (!groqClient || (!process.env.GROQ_API_KEY && !process.env.GROK_API_KEY)) {
+  if (!groqClient || !process.env.GROQ_API_KEY) {
     console.log('🔄 Using mock tweets (Groq AI not configured)');
     return generateMockTweets(topic);
   }
@@ -87,24 +87,28 @@ For each tweet, provide these ratings out of 10:
 - Savage Level: How brutally honest/roasting it is
 - Brutal Factor: How hard-hitting the truth is
 
-Return ONLY a JSON array where each object has:
+Return ONLY a valid JSON object with a "tweets" array where each object has:
 {
-  "text": "the actual tweet text",
-  "viral": number,
-  "relatable": number, 
-  "savage": number,
-  "brutal": number,
-  "reason": "one sentence explaining the ratings"
+  "tweets": [
+    {
+      "text": "the actual tweet text",
+      "viral": number,
+      "relatable": number, 
+      "savage": number,
+      "brutal": number,
+      "reason": "one sentence explaining the ratings"
+    }
+  ]
 }
 
-Generate exactly 10 tweets about "${topic}".`;
+Generate exactly 10 tweets about "${topic}". Return ONLY the JSON object, no other text.`;
 
     const completion = await groqClient.chat.completions.create({
       model: "llama-3.1-70b-versatile",
       messages: [
         {
           role: "system",
-          content: "You are RoastHub - a savage tweet generator for Indian Gen-Z. Always respond with valid JSON array only."
+          content: "You are RoastHub - a savage tweet generator for Indian Gen-Z. Always respond with valid JSON format only. No markdown, no code blocks, just pure JSON."
         },
         {
           role: "user",
