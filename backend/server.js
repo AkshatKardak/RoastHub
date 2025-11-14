@@ -16,12 +16,13 @@ app.use(express.json());
 // Routes
 app.use('/api/tweets', tweetRoutes);
 
-// MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/roasthub';
+// MongoDB Atlas connection
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://kardakakshat_db_user:94a6ozyGVdBv8OWP@cluster0roasthub.arxjo5a.mongodb.net/roasthub?retryWrites=true&w=majority&appName=Cluster0RoastHub';
 
 mongoose.connect(MONGODB_URI)
   .then(() => {
-    console.log('✅ Connected to MongoDB successfully');
+    console.log('✅ Connected to MongoDB Atlas successfully');
+    console.log('📊 Database: roasthub');
   })
   .catch((error) => {
     console.error('❌ MongoDB connection error:', error);
@@ -37,6 +38,7 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
     message: 'RoastHub Backend is healthy!',
+    mongodb: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
     timestamp: new Date().toISOString()
   });
 });
