@@ -9,6 +9,7 @@ let openai;
 try {
   openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
+            baseURL: 'https://api.groq.com/openai/v1',
   });
   console.log('✅ OpenAI initialized successfully');
 } catch (error) {
@@ -99,8 +100,7 @@ async function generateAITweets(topic) {
     `;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo", // Using 3.5 for cost efficiency
-      messages: [
+            model: "llama-3.1-70b-versatile", // Using Groq's free fast model      messages: [
         {
           role: "system",
           content: "You are RoastHub - a savage tweet generator for Indian Gen-Z. Always respond with valid JSON array only."
