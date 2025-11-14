@@ -17,7 +17,7 @@ app.use(express.json());
 app.use('/api/tweets', tweetRoutes);
 
 // MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/xtremedesi';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/roasthub';
 
 mongoose.connect(MONGODB_URI)
   .then(() => {
@@ -29,19 +29,19 @@ mongoose.connect(MONGODB_URI)
 
 // Basic route
 app.get('/', (req, res) => {
-  res.json({ message: 'XtremeDesi Backend is running!' });
+  res.json({ message: 'RoastHub Backend is running!' });
 });
 
 // Health check route
 app.get('/api/health', (req, res) => {
   res.json({ 
     status: 'OK', 
-    message: 'XtremeDesi Backend is healthy!',
+    message: 'RoastHub Backend is healthy!',
     timestamp: new Date().toISOString()
   });
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 XtremeDesi Server running on port ${PORT}`);
+  console.log(`🚀 RoastHub Server running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
 });
