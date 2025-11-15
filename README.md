@@ -40,7 +40,7 @@ Generate brutal, no-filter tweets with authentic Indian flavor! RoastHub creates
 **Backend**
 - Node.js & Express
 - MongoDB & Mongoose
-- OpenAI API
+- GROQ API
 
 ---
 
@@ -61,9 +61,9 @@ npm run install-all
 **Environment Setup**
 - Backend (.env)
 - env
-- MONGODB_URI=mongodb://localhost:27017/RoastHub
+- MONGODB_URI=your local host
 - PORT=5000
-- OPENAI_API_KEY=your_openai_api_key_here
+- GROQ_KEY=your_groq_api_key_here
 
 ---
 
@@ -169,7 +169,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 ## 🙏 Acknowledgments
-- OpenAI for GPT API
+- GROQ for GPT API
 - Indian Twitter for inspiration
 - Bollywood and cricket for endless roasting material
 - Desi Gen-Z for the savage slang
@@ -179,8 +179,11 @@ Link of OutSkill website [OutSkill](https://www.outskill.com) Webpage
 
 ---
 
+## Contributors
+Akshat Kardak - GitHub Profile **"https://github.com/AkshatKardak"**
 Made with ❤️ and lots of savage energy for the Indian internet!
 
 
 #
+
 
