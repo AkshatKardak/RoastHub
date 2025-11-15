@@ -9,27 +9,16 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// MongoDB Atlas connection with serverless optimization
+// MongoDB Atlas connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://kardakakshat_db_user:94a6ozyGVdBv8OWP@cluster0roasthub.arxjo5a.mongodb.net/roasthub?retryWrites=true&w=majority&appName=Cluster0RoastHub';
 
-let isConnected = false;
-
-export async function connectDB() {
-  if (isConnected) {
-    console.log('✅ Using existing MongoDB connection');
-    return;
-  }
-  
+async function connectDB() {
   try {
     await mongoose.connect(MONGODB_URI, {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
-      bufferCommands: false,
-      maxPoolSize: 10,
-      minPoolSize: 1
     });
     
-    isConnected = mongoose.connection.readyState === 1;
     console.log('✅ Connected to MongoDB Atlas successfully');
     console.log('📊 Database: roasthub');
   } catch (error) {
@@ -38,28 +27,12 @@ export async function connectDB() {
   }
 }
 
+// Connect to database
+connectDB().catch(console.error);
+
 // Middleware
 app.use(cors());
 app.use(express.json());
-
-// Ensure DB connection in serverless mode (lazy connection)
-app.use(async (req, res, next) => {
-  if ((process.env.VERCEL === '1' || process.env.VERCEL_ENV) && !isConnected) {
-    try {
-      await connectDB();
-    } catch (error) {
-      console.error('Failed to connect to DB:', error);
-      // Continue anyway - some routes might work without DB
-    }
-  }
-  next();
-});
-
-// Initialize connection only in non-serverless environments
-// In serverless (Vercel), connect on first request to avoid cold start issues
-if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
-  connectDB().catch(console.error);
-}
 
 // Routes
 app.use('/api/tweets', tweetRoutes);
@@ -79,21 +52,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Only start server if not in serverless environment (Vercel)
-// Vercel serverless functions don't need app.listen()
-if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
-  // Bind explicitly to 0.0.0.0 so the server is reachable on localhost/IPv4
-  // Print PID for easier debugging and explicitly bind to 0.0.0.0 so localhost
-  // and other interfaces can reach the server in dev environments.
+// Start server
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 RoastHub Server running on port ${PORT}`);
+  console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
   console.log('Process PID:', process.pid);
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 RoastHub Server running on port ${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-    console.log('Bound to:', '0.0.0.0');
-  });
-} else {
-  console.log('🚀 Running in serverless mode (Vercel)');
-}
+});
 
-// Export app for Vercel serverless
 export default app;
