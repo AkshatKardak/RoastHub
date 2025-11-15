@@ -4,11 +4,11 @@ Generate brutal, no-filter tweets with authentic Indian flavor! RoastHub creates
 
 ## 🚀 Live Deployment
 
-[![Frontend](https://img.shields.io/badge/Frontend-Live-success?style=for-the-badge&logo=render)](https://roasthub-frontend.onrender.com)
-[![Backend](https://img.shields.io/badge/Backend-Live-success?style=for-the-badge&logo=render)](https://roasthub-fruw.onrender.com)
+[![Frontend](https://img.shields.io/badge/Frontend-Live-success?style=for-the-badge&logo=render)](https://roasthubfront.vercel.app)
+[![Backend](https://img.shields.io/badge/Backend-Live-success?style=for-the-badge&logo=render)](https://roasthub-backend-api.onrender.com)
 
-- **Frontend**: [https://roasthub-frontend.onrender.com](https://roasthub-frontend.onrender.com)
-- **Backend API**: [https://roasthub-fruw.onrender.com](https://roasthub-fruw.onrender.com)
+- **Frontend**: [https://roasthubfront.vercel.app](https://roasthubfront.vercel.app)
+- **Backend API**: [https://roasthub-backend-api.onrender.com](https://roasthub-backend-api.onrender.com)
 
 ---
 
@@ -183,3 +183,4 @@ Made with ❤️ and lots of savage energy for the Indian internet!
 
 
 #
+
