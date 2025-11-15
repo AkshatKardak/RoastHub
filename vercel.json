@@ -2,7 +2,7 @@
   "version": 2,
   "installCommand": "npm install",
   "functions": {
-    "api/index.js": {
+    "backend/api/index.js": {
       "runtime": "nodejs20.x",
       "includeFiles": ["backend/**"]
     }
@@ -10,7 +10,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "api/index.js"
+      "dest": "backend/api/index.js"
     }
   ]
 }
