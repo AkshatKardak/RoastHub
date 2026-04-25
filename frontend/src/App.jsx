@@ -23,20 +23,6 @@ const TABS = [
   { id: "fame",     label: "🏆 Hall of Fame" },
 ];
 
-{/* In the logo-wrap div inside <header> */}
-<div className="logo-wrap">
-  <img
-    src="/RoastHub.png"
-    alt="RoastHub Logo"
-    className="logo-img"
-    width={80}
-    height={80}
-    draggable={false}
-  />
-  <h1 className="app-title">Roast<span>Hub</span></h1>
-  <p className="app-subtitle">Global AI Roast Generator</p>
-</div>
-
 export default function App() {
   const [topic,   setTopic]   = useState("");
   const [tweets,  setTweets]  = useState([]);
@@ -47,7 +33,6 @@ export default function App() {
 
   const { isPinned, toggle: togglePin } = usePinnedTweets();
 
-  /* generateTweets also accepts a topic directly (from roulette / chips) */
   const generateTweets = useCallback(async (customTopic) => {
     const t = (customTopic ?? topic).trim();
     if (!t) { setError("Please enter a topic."); return; }
@@ -83,7 +68,14 @@ export default function App() {
       {/* ── HERO HEADER ── */}
       <header className="app-header">
         <div className="logo-wrap">
-          <FlameLogo size={72} />
+          <img
+            src="/RoastHub.png"
+            alt="RoastHub Logo"
+            className="logo-img"
+            width={80}
+            height={80}
+            draggable={false}
+          />
           <h1 className="app-title">Roast<span>Hub</span></h1>
           <p className="app-subtitle">Global AI Roast Generator</p>
         </div>
@@ -110,9 +102,7 @@ export default function App() {
             <PinnedFeed />
 
             <div className="search-controls">
-              {/* Single unified search row */}
               <div className="search-row">
-                {/* SearchWithHistory owns the text input + its own submit btn */}
                 <SearchWithHistory
                   onSearch={generateTweets}
                   loading={loading}
@@ -120,7 +110,6 @@ export default function App() {
                   setTopic={setTopic}
                 />
 
-                {/* Count selector — only this stays beside the search */}
                 <div className="count-select-wrap">
                   <label className="count-label">Count</label>
                   <select
@@ -134,8 +123,6 @@ export default function App() {
                     ))}
                   </select>
                 </div>
-                {/* ✅ Removed the redundant outer "Roast It" generate-btn —
-                    SearchWithHistory already submits on its own button */}
               </div>
 
               {/* Trending + Roulette */}
