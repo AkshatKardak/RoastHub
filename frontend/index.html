@@ -2,9 +2,28 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/png" href="/RoastHub.png" />
+    <link rel="apple-touch-icon" href="/RoastHub.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>RoastHub - Savage Tweet Generator</title>
+    <meta name="description" content="Generate savage, brutal Indian-style roast tweets on any trending topic." />
+    <meta property="og:title" content="RoastHub - Savage Tweet Generator" />
+    <meta property="og:description" content="Generate savage, brutal Indian-style roast tweets on any trending topic." />
+    <meta name="theme-color" content="#ff4520" />
+    <script>
+      (function() {
+        try {
+          const saved = localStorage.getItem('roasthub-theme');
+          const sys = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', saved || sys);
+        } catch(e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   </head>
   <body>
     <div id="root"></div>

@@ -1,171 +1,263 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
 
-// Use Vite environment variable for API base URL in development
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://roasthub-backend.vercel.app';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://roasthub-backend.onrender.com';
 
-function App() {
-  const [topic, setTopic] = useState('');
-  const [tweets, setTweets] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+const RATING_CONFIG = [
+  { key: 'viral',     label: 'Viral'     },
+  { key: 'relatable', label: 'Relatable' },
+  { key: 'savage',    label: 'Savage'    },
+  { key: 'brutal',    label: 'Brutal'    },
+];
 
-  const generateTweets = async () => {
-    if (!topic.trim()) {
-      setError('Please enter a topic first!');
-      return;
-    }
+function getRatingColor(value) {
+  if (value >= 8) return 'var(--color-rating-high)';
+  if (value >= 5) return 'var(--color-rating-mid)';
+  return 'var(--color-rating-low)';
+}
 
-    setLoading(true);
-    setError('');
-    try {
-        const response = await axios.post(`${API_BASE}/api/tweets/generate`, {
-        topic: topic.trim()
-        });
-        setTweets(response.data.tweets); // Now 'response' is defined ✅
-    } catch (error) {
-      console.error('Error generating tweets:', error);
-      setError('Failed to generate tweets. Please try again.');
-    }
-    setLoading(false);
+function getTopBadge(tweet) {
+  const max = Math.max(tweet.viral, tweet.relatable, tweet.savage, tweet.brutal);
+  if (max >= 8) return { label: '🔥 Viral Bomb', cls: 'high' };
+  if (max >= 6) return { label: '⚡ Spicy',      cls: 'mid'  };
+  return            { label: '😐 Mid Energy',  cls: 'low'  };
+}
+
+function RatingBars({ tweet }) {
+  return (
+    <div className="ratings-container">
+      {RATING_CONFIG.map(({ key, label }) => {
+        const val = tweet[key] ?? 0;
+        return (
+          <div className="rating-row" key={key}>
+            <span className="rating-label">{label}</span>
+            <div className="rating-track">
+              <div
+                className="rating-fill"
+                style={{
+                  width: `${val * 10}%`,
+                  background: getRatingColor(val),
+                }}
+              />
+            </div>
+            <span className="rating-value">{val}/10</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function TweetCard({ tweet, index }) {
+  const [copied, setCopied] = useState(false);
+  const badge = getTopBadge(tweet);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(tweet.text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
   };
 
-  const RatingIcon = ({ type, value }) => {
-    const getIcon = () => {
-      switch(type) {
-        case 'viral': return '🔥';
-        case 'relatable': return '💖';
-        case 'savage': return '⚡';
-        case 'brutal': return '💀';
-        default: return '⭐';
-      }
-    };
+  return (
+    <motion.div
+      className="tweet-card"
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        delay: index * 0.07,
+        duration: 0.45,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+    >
+      <span className="tweet-card-index">#{String(index + 1).padStart(2, '0')}</span>
 
-    const getColor = () => {
-      if (value >= 8) return '#ff4757';
-      if (value >= 6) return '#ffa502';
-      return '#2ed573';
-    };
+      <p className="tweet-text">{tweet.text}</p>
 
-    return (
-      <div className="rating-icon" style={{ color: getColor() }}>
-        <span className="icon">{getIcon()}</span>
-        <span className="value">{value}/10</span>
+      <RatingBars tweet={tweet} />
+
+      <div className="reason">
+        <strong>Why it works: </strong>{tweet.reason}
       </div>
-    );
+
+      <div className="card-footer">
+        <div className="tweet-badges">
+          <span className={`badge ${badge.cls}`}>{badge.label}</span>
+        </div>
+        <button
+          className={`copy-btn ${copied ? 'copied' : ''}`}
+          onClick={handleCopy}
+          aria-label="Copy tweet text"
+        >
+          {copied ? '✓ Copied!' : 'Copy'}
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+function SkeletonGrid() {
+  return (
+    <div className="tweets-grid" style={{ marginTop: '1rem' }}>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="skeleton-card" style={{ animationDelay: `${i * 0.1}s` }} />
+      ))}
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <motion.div
+      className="placeholder"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3, duration: 0.5 }}
+    >
+      <div className="placeholder-icon">🔥</div>
+      <h3>No roasts yet</h3>
+      <p>
+        Type any trending topic above — IPL, Bollywood, College life, Politics —
+        and hit <strong>Generate Roasts</strong> for savage Indian-style tweets.
+      </p>
+    </motion.div>
+  );
+}
+
+export default function App() {
+  const [topic, setTopic]   = useState('');
+  const [tweets, setTweets] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]   = useState('');
+  const [theme, setTheme]   = useState(
+    () => document.documentElement.getAttribute('data-theme') || 'dark'
+  );
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('roasthub-theme', next); } catch (e) {}
+  };
+
+  const generateTweets = async () => {
+    if (!topic.trim()) { setError('Please enter a topic first!'); return; }
+    setLoading(true);
+    setError('');
+    setTweets([]);
+    try {
+      const res = await axios.post(`${API_BASE}/api/tweets/generate`, {
+        topic: topic.trim(),
+      });
+      setTweets(res.data.tweets);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to generate tweets. Check your connection and try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKey = (e) => {
+    if (e.key === 'Enter' && !loading) generateTweets();
   };
 
   return (
     <div className="app">
-      {/* Animated Background */}
-      <div className="animated-bg">
-        <div className="gradient-1"></div>
-        <div className="gradient-2"></div>
-        <div className="gradient-3"></div>
-      </div>
+      {/* Theme Toggle */}
+      <button
+        className="theme-toggle"
+        onClick={toggleTheme}
+        aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+      >
+        {theme === 'dark' ? '☀️' : '🌑'}
+      </button>
 
-      <motion.div 
+      <motion.div
         className="container"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       >
+        {/* Header */}
         <header className="header">
-          <motion.h1 
+          <motion.h1
             className="title"
-            initial={{ scale: 0.5 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.8, type: "spring" }}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.7, type: 'spring', bounce: 0.35 }}
           >
             RoastHub
           </motion.h1>
           <p className="subtitle">Your Savage Tweet Generator</p>
         </header>
 
+        {/* Input */}
         <div className="input-section">
           <motion.input
             type="text"
-            placeholder="Enter any trending topic... (e.g., IPL, Bollywood, Politics)"
+            placeholder="Enter a topic… (IPL, Bollywood, Politics)"
             value={topic}
-            onChange={(e) => setTopic(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && generateTweets()}
+            onChange={(e) => { setTopic(e.target.value); setError(''); }}
+            onKeyDown={handleKey}
             className="topic-input"
-            whileFocus={{ scale: 1.02 }}
+            whileFocus={{ scale: 1.01 }}
             disabled={loading}
+            maxLength={100}
           />
           <motion.button
             onClick={generateTweets}
             disabled={loading}
             className="generate-btn"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
           >
-            {loading ? 'Generating Savage Tweets...' : 'Generate Savage Tweets'}
+            {loading ? '⏳ Generating…' : '🔥 Generate Roasts'}
           </motion.button>
         </div>
 
-        {error && (
-          <motion.div 
-            className="error-message"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            {error}
-          </motion.div>
-        )}
+        {/* Error */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              className="error-message"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.25 }}
+            >
+              {error}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {tweets.length > 0 && (
-          <motion.div 
+        {/* Skeleton */}
+        {loading && <SkeletonGrid />}
+
+        {/* Tweets */}
+        {!loading && tweets.length > 0 && (
+          <motion.div
             className="tweets-container"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
+            transition={{ duration: 0.4 }}
           >
-            <h2 className="tweets-title">Savage Tweets on "{topic}"</h2>
+            <h2 className="tweets-title">
+              Roasting <span>"{topic}"</span>
+            </h2>
             <div className="tweets-grid">
-              {tweets.map((tweet, index) => (
-                <motion.div
-                  key={index}
-                  className="tweet-card"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ y: -5 }}
-                >
-                  <p className="tweet-text">"{tweet.text}"</p>
-                  
-                  <div className="ratings-container">
-                    <RatingIcon type="viral" value={tweet.viral} />
-                    <RatingIcon type="relatable" value={tweet.relatable} />
-                    <RatingIcon type="savage" value={tweet.savage} />
-                    <RatingIcon type="brutal" value={tweet.brutal} />
-                  </div>
-
-                  <div className="reason">
-                    <strong>Why it works:</strong> {tweet.reason}
-                  </div>
-                </motion.div>
+              {tweets.map((tweet, i) => (
+                <TweetCard key={i} tweet={tweet} index={i} />
               ))}
             </div>
           </motion.div>
         )}
 
-        {tweets.length === 0 && !loading && (
-          <motion.div 
-            className="placeholder"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <p>💡 Enter a trending topic and generate savage Indian-style tweets!</p>
-            <p>Examples: "IPL 2024", "Bollywood nepotism", "Indian politics", "College life"</p>
-          </motion.div>
-        )}
+        {/* Empty State */}
+        {!loading && tweets.length === 0 && !error && <EmptyState />}
       </motion.div>
     </div>
   );
 }
-
-export default App;

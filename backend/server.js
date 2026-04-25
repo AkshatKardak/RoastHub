@@ -2,98 +2,74 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import https from 'https';
 import tweetRoutes from './routes/tweets.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const MONGODB_URI = process.env.MONGODB_URI;
 
-// MongoDB Atlas connection with serverless optimization
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://kardakakshat_db_user:94a6ozyGVdBv8OWP@cluster0roasthub.arxjo5a.mongodb.net/roasthub?retryWrites=true&w=majority&appName=Cluster0RoastHub';
-
-let isConnected = false;
-
-export async function connectDB() {
-  if (isConnected) {
-    console.log('✅ Using existing MongoDB connection');
-    return;
+// ── DB ──
+async function connectDB() {
+  if (!MONGODB_URI) {
+    console.error('❌ MONGODB_URI not found in environment variables.');
+    process.exit(1);
   }
-  
   try {
     await mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000,
       socketTimeoutMS: 45000,
-      bufferCommands: false,
-      maxPoolSize: 10,
-      minPoolSize: 1
+      family: 4,
     });
-    
-    isConnected = mongoose.connection.readyState === 1;
-    console.log('✅ Connected to MongoDB Atlas successfully');
-    console.log('📊 Database: roasthub');
-  } catch (error) {
-    console.error('❌ MongoDB connection error:', error.message);
-    throw error;
+    console.log('✅ Connected to MongoDB Atlas');
+  } catch (err) {
+    console.error('❌ MongoDB connection failed:', err.message);
+    process.exit(1);
   }
 }
 
-// Middleware
-app.use(cors());
+connectDB();
+
+// ── MIDDLEWARE ──
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*',
+  methods: ['GET', 'POST'],
+}));
 app.use(express.json());
 
-// Ensure DB connection in serverless mode (lazy connection)
-app.use(async (req, res, next) => {
-  if ((process.env.VERCEL === '1' || process.env.VERCEL_ENV) && !isConnected) {
-    try {
-      await connectDB();
-    } catch (error) {
-      console.error('Failed to connect to DB:', error);
-      // Continue anyway - some routes might work without DB
-    }
-  }
-  next();
-});
-
-// Initialize connection only in non-serverless environments
-// In serverless (Vercel), connect on first request to avoid cold start issues
-if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
-  connectDB().catch(console.error);
-}
-
-// Routes
+// ── ROUTES ──
 app.use('/api/tweets', tweetRoutes);
 
-// Basic route
 app.get('/', (req, res) => {
-  res.json({ message: 'RoastHub Backend is running!' });
+  res.json({ message: '🔥 RoastHub backend is live!' });
 });
 
-// Health check route
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    message: 'RoastHub Backend is healthy!',
+  res.json({
+    status: 'OK',
+    message: 'RoastHub is healthy!',
     mongodb: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
-// Only start server if not in serverless environment (Vercel)
-// Vercel serverless functions don't need app.listen()
-if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
-  // Bind explicitly to 0.0.0.0 so the server is reachable on localhost/IPv4
-  // Print PID for easier debugging and explicitly bind to 0.0.0.0 so localhost
-  // and other interfaces can reach the server in dev environments.
-  console.log('Process PID:', process.pid);
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 RoastHub Server running on port ${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-    console.log('Bound to:', '0.0.0.0');
-  });
-} else {
-  console.log('🚀 Running in serverless mode (Vercel)');
-}
+// ── START + KEEP-ALIVE ──
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 
-// Export app for Vercel serverless
+  const RENDER_URL = process.env.RENDER_EXTERNAL_URL;
+  if (RENDER_URL) {
+    setInterval(() => {
+      https.get(`${RENDER_URL}/api/health`, (res) => {
+        console.log(`🔁 Keep-alive ping → ${res.statusCode}`);
+      }).on('error', (err) => {
+        console.warn('⚠️ Keep-alive ping failed:', err.message);
+      });
+    }, 14 * 60 * 1000);
+    console.log(`⏰ Keep-alive enabled → ${RENDER_URL}/api/health`);
+  }
+});
+
 export default app;
