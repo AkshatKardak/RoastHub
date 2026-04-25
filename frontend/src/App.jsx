@@ -3,7 +3,7 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://roasthub-backend.onrender.com';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://roasthub-backend-api.onrender.com';
 
 const RATING_CONFIG = [
   { key: 'viral',     label: 'Viral'     },
