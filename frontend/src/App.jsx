@@ -23,80 +23,19 @@ const TABS = [
   { id: "fame",     label: "🏆 Hall of Fame" },
 ];
 
-/* ── Inline SVG flame logo (matches favicon style) ── */
-function FlameLogo({ size = 64 }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 64 64"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-label="RoastHub flame logo"
-      className="logo-svg"
-    >
-      <defs>
-        <radialGradient id="flame-outer" cx="50%" cy="80%" r="60%">
-          <stop offset="0%"   stopColor="#ff6b35" />
-          <stop offset="60%"  stopColor="#ff4520" />
-          <stop offset="100%" stopColor="#c0290a" />
-        </radialGradient>
-        <radialGradient id="flame-inner" cx="50%" cy="85%" r="50%">
-          <stop offset="0%"   stopColor="#ffe066" />
-          <stop offset="50%"  stopColor="#ffaa00" />
-          <stop offset="100%" stopColor="#ff6b35" />
-        </radialGradient>
-        <filter id="flame-glow">
-          <feGaussianBlur stdDeviation="2.5" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-
-      {/* Outer flame body */}
-      <path
-        d="M32 4
-           C32 4 44 18 44 28
-           C44 22 40 18 38 16
-           C42 26 46 34 42 44
-           C46 38 48 30 46 22
-           C50 32 50 44 44 52
-           C48 46 50 36 46 30
-           C50 40 50 52 44 58
-           C40 62 24 62 20 58
-           C14 52 14 40 18 30
-           C14 36 16 46 20 52
-           C14 44 14 32 18 22
-           C16 30 18 38 22 44
-           C18 34 22 26 26 16
-           C24 18 20 22 20 28
-           C20 18 32 4 32 4Z"
-        fill="url(#flame-outer)"
-        filter="url(#flame-glow)"
-      />
-
-      {/* Inner bright core */}
-      <path
-        d="M32 22
-           C32 22 38 30 38 38
-           C38 34 35 30 34 28
-           C36 33 38 38 36 44
-           C38 40 38 34 36 28
-           C38 34 38 42 34 48
-           C32 52 30 52 28 48
-           C24 42 24 34 26 28
-           C24 34 24 40 26 44
-           C24 38 26 33 28 28
-           C27 30 24 34 24 38
-           C24 30 32 22 32 22Z"
-        fill="url(#flame-inner)"
-        opacity="0.9"
-      />
-    </svg>
-  );
-}
+{/* In the logo-wrap div inside <header> */}
+<div className="logo-wrap">
+  <img
+    src="/RoastHub.png"
+    alt="RoastHub Logo"
+    className="logo-img"
+    width={80}
+    height={80}
+    draggable={false}
+  />
+  <h1 className="app-title">Roast<span>Hub</span></h1>
+  <p className="app-subtitle">Global AI Roast Generator</p>
+</div>
 
 export default function App() {
   const [topic,   setTopic]   = useState("");
