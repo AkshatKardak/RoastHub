@@ -14,7 +14,8 @@ import WallOfFame        from "./components/WallOfFame";
 import RoastBattleMode   from "./components/RoastBattleMode";
 import usePinnedTweets   from "./hooks/usePinnedTweets";
 
-export const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://roasthub-backend-api.onrender.com";
+export const API_BASE =
+  import.meta.env.VITE_API_BASE_URL || "https://roasthub-backend-api.onrender.com";
 
 const TABS = [
   { id: "generate", label: "🔥 Generate"     },
@@ -48,7 +49,9 @@ export default function App() {
       setTweets(res.data.tweets || []);
       if (customTopic) setTopic(customTopic);
     } catch (err) {
-      setError(err.response?.data?.error || "Something went wrong. Please try again.");
+      setError(
+        err.response?.data?.error || "Something went wrong. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -61,20 +64,18 @@ export default function App() {
 
   return (
     <div className="app">
-      {/* ── HEADER ── */}
+
+      {/* ── HERO HEADER ── */}
       <header className="app-header">
-        <div className="header-content">
-          <div className="logo-wrap">
-            <span className="logo-icon">🔥</span>
-            <div>
-              <h1 className="app-title">RoastHub</h1>
-              <p className="app-subtitle">Global AI Roast Generator</p>
-            </div>
-          </div>
+        <div className="logo-wrap">
+          <span className="logo-icon">🔥</span>
+          <h1 className="app-title">Roast<span>Hub</span></h1>
+          <p className="app-subtitle">Global AI Roast Generator</p>
         </div>
       </header>
 
       <main className="app-main">
+
         {/* ── TABS ── */}
         <div className="tabs-row">
           {TABS.map((t) => (
@@ -94,15 +95,14 @@ export default function App() {
             <PinnedFeed />
 
             <div className="search-controls">
+              {/* Search + Count + Button row */}
               <div className="search-row">
-                {/* ✅ Fixed: onSearch (not onSubmit) to match SearchWithHistory props */}
                 <SearchWithHistory
                   onSearch={generateTweets}
                   loading={loading}
                 />
 
                 <div className="count-select-wrap">
-                  {/* ✅ Fixed: was "abel" (missing opening < and l) */}
                   <label className="count-label">Count</label>
                   <select
                     className="count-select"
@@ -127,6 +127,7 @@ export default function App() {
                 </motion.button>
               </div>
 
+              {/* Trending + Roulette */}
               <div className="tools-row">
                 <TrendingTopics onTopicClick={handleChipClick} />
                 <RandomRoulette onSpin={handleChipClick} />
@@ -144,7 +145,7 @@ export default function App() {
               </motion.div>
             )}
 
-            {/* Loading skeleton */}
+            {/* Skeleton while loading */}
             {loading && <SkeletonGrid count={count} />}
 
             {/* Empty state */}
@@ -156,19 +157,25 @@ export default function App() {
             {!loading && tweets.length > 0 && (
               <motion.div
                 className="tweets-grid"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.4 }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
               >
                 <AnimatePresence>
                   {tweets.map((tweet, i) => (
-                    <TweetCard
+                    <motion.div
                       key={`${tweet.text}-${i}`}
-                      tweet={tweet}
-                      index={i}
-                      isPinned={isPinned(tweet)}
-                      onPin={() => togglePin(tweet)}
-                    />
+                      initial={{ opacity: 0, y: 16 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.06 }}
+                    >
+                      <TweetCard
+                        tweet={tweet}
+                        index={i}
+                        isPinned={isPinned(tweet)}
+                        onPin={() => togglePin(tweet)}
+                      />
+                    </motion.div>
                   ))}
                 </AnimatePresence>
               </motion.div>
@@ -181,10 +188,11 @@ export default function App() {
 
         {/* ── HALL OF FAME TAB ── */}
         {tab === "fame" && <WallOfFame />}
+
       </main>
 
       <footer className="app-footer">
-        <p>🔥 RoastHub · AI-Powered Global Roast Generator · Built with Groq + MongoDB</p>
+        🔥 RoastHub · AI-Powered Global Roast Generator · Built with Groq + MongoDB
       </footer>
     </div>
   );
