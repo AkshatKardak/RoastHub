@@ -11,7 +11,7 @@ Return ONLY valid JSON:
   "topicA": "${topicA}",
   "topicB": "${topicB}",
   "tweetsA": [
-    { "text": "roast tweet about ${topicB}", "roastScore": 0-100, "tone": "string", "badge": "string", "category": "savage|funny|insightful|constructive|supportive" },
+    { "text": "roast tweet about ${topicB}", "roastScore": 0-100, "tone": "string", "badge": "string", "category": "string" },
     { "text": "...", "roastScore": 0-100, "tone": "string", "badge": "string", "category": "string" },
     { "text": "...", "roastScore": 0-100, "tone": "string", "badge": "string", "category": "string" }
   ],
@@ -25,4 +25,4 @@ Return ONLY valid JSON:
 }
 `;
 
-module.exports = battlePrompt;
+export default battlePrompt;

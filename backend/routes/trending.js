@@ -1,8 +1,6 @@
-const express = require("express");
+import express from 'express';
+import { getTrending } from '../controllers/trendingController.js';
+
 const router = express.Router();
-const { getTrending } = require("../controllers/trendingController");
-
-// GET /api/trending
-router.get("/", getTrending);
-
-module.exports = router;
+router.get('/', getTrending);
+export default router;

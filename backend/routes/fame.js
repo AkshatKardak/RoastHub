@@ -1,8 +1,6 @@
-const express = require("express");
+import express from 'express';
+import { getWallOfFame } from '../controllers/fameController.js';
+
 const router = express.Router();
-const { getWallOfFame } = require("../controllers/fameController");
-
-// GET /api/fame?range=alltime|week|today
-router.get("/", getWallOfFame);
-
-module.exports = router;
+router.get('/', getWallOfFame);
+export default router;

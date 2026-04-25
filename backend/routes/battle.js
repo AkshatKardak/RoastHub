@@ -1,9 +1,7 @@
-const express = require("express");
+import express from 'express';
+import { roastBattle } from '../controllers/battleController.js';
+import { battleLimiter } from '../middleware/rateLimiter.js';
+
 const router = express.Router();
-const { roastBattle } = require("../controllers/battleController");
-const { battleLimiter } = require("../middleware/rateLimiter");
-
-// POST /api/battle
-router.post("/", battleLimiter, roastBattle);
-
-module.exports = router;
+router.post('/', battleLimiter, roastBattle);
+export default router;

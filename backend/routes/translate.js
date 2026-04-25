@@ -1,8 +1,6 @@
-const express = require("express");
+import express from 'express';
+import { translateRoast } from '../controllers/translateController.js';
+
 const router = express.Router();
-const { translateRoast } = require("../controllers/translateController");
-
-// POST /api/translate
-router.post("/", translateRoast);
-
-module.exports = router;
+router.post('/', translateRoast);
+export default router;

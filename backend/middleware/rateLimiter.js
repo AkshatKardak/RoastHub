@@ -1,17 +1,17 @@
-const rateLimit = require("express-rate-limit");
+import rateLimit from 'express-rate-limit';
 
-const generateLimiter = rateLimit({
-  windowMs: 60 * 1000,    // 1 minute
+export const generateLimiter = rateLimit({
+  windowMs: 60 * 1000,
   max: 15,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: "Too many requests. Please wait a moment and try again." },
+  message: { error: 'Too many requests. Please wait a moment and try again.' },
 });
 
-const battleLimiter = rateLimit({
+export const battleLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 8,
-  message: { error: "Too many battles! Cool down for a minute." },
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many battles! Cool down for a minute.' },
 });
-
-module.exports = { generateLimiter, battleLimiter };

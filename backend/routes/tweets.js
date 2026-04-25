@@ -1,10 +1,8 @@
-const express = require("express");
+import express from 'express';
+import { generateTweets } from '../controllers/tweetController.js';
+import { generateLimiter } from '../middleware/rateLimiter.js';
+import validateTopic from '../middleware/validateTopic.js';
+
 const router = express.Router();
-const { generateTweets } = require("../controllers/tweetController");
-const { generateLimiter } = require("../middleware/rateLimiter");
-const validateTopic = require("../middleware/validateTopic");
-
-// POST /api/tweets/generate
-router.post("/generate", generateLimiter, validateTopic, generateTweets);
-
-module.exports = router;
+router.post('/generate', generateLimiter, validateTopic, generateTweets);
+export default router;

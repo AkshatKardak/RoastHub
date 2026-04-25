@@ -13,4 +13,4 @@ Return ONLY valid JSON:
 }
 `;
 
-module.exports = translatePrompt;
+export default translatePrompt;

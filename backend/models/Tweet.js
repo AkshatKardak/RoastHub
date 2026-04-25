@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from 'mongoose';
 
 const TweetSchema = new mongoose.Schema(
   {
@@ -19,7 +19,7 @@ const TweetSchema = new mongoose.Schema(
         pinned:        { type: Boolean, default: false },
         category: {
           type: String,
-          enum: ["savage", "constructive", "funny", "insightful", "supportive", null],
+          enum: ['savage', 'constructive', 'funny', 'insightful', 'supportive', null],
           default: null,
         },
         tone:      { type: String },
@@ -30,14 +30,13 @@ const TweetSchema = new mongoose.Schema(
         downvotes: { type: Number, default: 0 },
       },
     ],
-    generatedAt: { type: Date, default: Date.now },
+    generatedAt:  { type: Date, default: Date.now },
     searchCount:  { type: Number, default: 1 },
   },
   { timestamps: true }
 );
 
-// Compound index for trending aggregation
 TweetSchema.index({ topic: 1, searchCount: -1 });
 TweetSchema.index({ generatedAt: -1 });
 
-module.exports = mongoose.model("Tweet", TweetSchema);
+export default mongoose.model('Tweet', TweetSchema);

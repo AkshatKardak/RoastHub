@@ -31,4 +31,4 @@ Return ONLY valid JSON (no markdown, no code blocks):
 }
 `;
 
-module.exports = generatePrompt;
+export default generatePrompt;
