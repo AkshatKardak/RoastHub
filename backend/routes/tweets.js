@@ -1,9 +1,10 @@
-import express from 'express';
-import { generateTweets, getTweetHistory } from '../controllers/tweetController.js';
-
+const express = require("express");
 const router = express.Router();
+const { generateTweets } = require("../controllers/tweetController");
+const { generateLimiter } = require("../middleware/rateLimiter");
+const validateTopic = require("../middleware/validateTopic");
 
-router.post('/generate', generateTweets);
-router.get('/history', getTweetHistory);
+// POST /api/tweets/generate
+router.post("/generate", generateLimiter, validateTopic, generateTweets);
 
-export default router;
+module.exports = router;
