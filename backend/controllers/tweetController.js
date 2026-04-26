@@ -1,8 +1,6 @@
-import Groq from 'groq-sdk';
+import { groq, GROQ_MODEL } from '../config/groq.js';
 import Tweet from '../models/Tweet.js';
 import generatePrompt from '../prompts/generatePrompt.js';
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export const generateTweets = async (req, res, next) => {
   try {
@@ -21,7 +19,7 @@ export const generateTweets = async (req, res, next) => {
     }
 
     const completion = await groq.chat.completions.create({
-      model: 'llama3-70b-8192',
+      model: GROQ_MODEL,
       messages: [{ role: 'user', content: generatePrompt(topic, safeCount) }],
       temperature: 0.9,
       max_tokens: 3000,

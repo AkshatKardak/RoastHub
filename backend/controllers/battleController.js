@@ -1,7 +1,5 @@
-import Groq from 'groq-sdk';
+import { groq, GROQ_MODEL } from '../config/groq.js';
 import battlePrompt from '../prompts/battlePrompt.js';
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export const roastBattle = async (req, res, next) => {
   try {
@@ -12,7 +10,7 @@ export const roastBattle = async (req, res, next) => {
       return res.status(400).json({ error: 'Topics must be different.' });
 
     const completion = await groq.chat.completions.create({
-      model: 'llama3-70b-8192',
+      model: GROQ_MODEL,
       messages: [{ role: 'user', content: battlePrompt(topicA.trim(), topicB.trim()) }],
       temperature: 0.95,
       max_tokens: 2500,

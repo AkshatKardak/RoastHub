@@ -1,7 +1,5 @@
-import Groq from 'groq-sdk';
+import { groq, GROQ_MODEL } from '../config/groq.js';
 import translatePrompt from '../prompts/translatePrompt.js';
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export const translateRoast = async (req, res, next) => {
   try {
@@ -10,7 +8,7 @@ export const translateRoast = async (req, res, next) => {
     if (!language?.trim()) return res.status(400).json({ error: 'Language is required.' });
 
     const completion = await groq.chat.completions.create({
-      model: 'llama3-70b-8192',
+      model: GROQ_MODEL,
       messages: [{ role: 'user', content: translatePrompt(text.trim(), language.trim()) }],
       temperature: 0.7,
       max_tokens: 800,
